@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK - Smart Payment for Action, Reward, and Keep Saving</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0f0a;--bg2:#111811;--bg3:#161e16;--card:#1a231a;--card2:#1f2b1f;
+    --neon:#39ff14;--neon2:#2ecc71;--neon3:#00ff88;
+    --neonsoft:rgba(57,255,20,0.12);--neonglow:rgba(57,255,20,0.25);
+    --text:#e8f5e8;--text2:#9ab89a;--text3:#5a7a5a;
+    --border:rgba(57,255,20,0.15);--border2:rgba(57,255,20,0.3);
+    --red:#ff4444;--amber:#ffaa00;--blue:#00aaff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(10,15,10,0.95);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--neon);letter-spacing:-0.02em;text-shadow:0 0 20px rgba(57,255,20,0.4);}
+  .logo span{color:var(--text);}
+  .nav-tabs{display:flex;gap:0.25rem;}
+  .nav-tab{padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:transparent;transition:all 0.2s;font-family:'Space Grotesk',sans-serif;}
+  .nav-tab:hover{color:var(--neon);background:var(--neonsoft);}
+  .nav-tab.active{color:var(--neon);background:var(--neonsoft);border:1px solid var(--border2);}
+  .nav-badge{background:var(--neon);color:#0a0f0a;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:0.5rem;}
+
+  .page{display:none;padding:2rem;max-width:900px;margin:0 auto;}
+  .page.active{display:block;}
+
+  /* HOME */
+  .hero{text-align:center;padding:3rem 0 2rem;}
+  .hero-tag{display:inline-block;background:var(--neonsoft);border:1px solid var(--border2);color:var(--neon);font-size:0.75rem;font-weight:600;padding:4px 14px;border-radius:20px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1.5rem;}
+  .hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;line-height:1.1;color:var(--text);margin-bottom:1rem;}
+  .hero h1 em{font-style:normal;color:var(--neon);text-shadow:0 0 30px rgba(57,255,20,0.35);}
+  .hero p{color:var(--text2);font-size:1rem;max-width:480px;margin:0 auto 2rem;line-height:1.7;}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:2rem 0;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;}
+  .stat-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--neon);}
+  .stat-label{font-size:0.75rem;color:var(--text2);margin-top:4px;}
+  .features{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.5rem 0;}
+  .feat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:border-color 0.2s,background 0.2s;}
+  .feat-card:hover{border-color:var(--border2);background:var(--card2);}
+  .feat-icon{width:40px;height:40px;border-radius:10px;background:var(--neonsoft);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:0.75rem;color:var(--neon);}
+  .feat-card h3{font-size:0.95rem;font-weight:600;margin-bottom:0.4rem;}
+  .feat-card p{font-size:0.8rem;color:var(--text2);line-height:1.5;}
+
+  /* SCAN */
+  .scan-container{max-width:480px;margin:0 auto;}
+  .scan-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:center;margin-bottom:1.5rem;}
+
+  /* Camera area */
+  .camera-wrap{position:relative;width:100%;max-width:300px;margin:1rem auto;border-radius:14px;overflow:hidden;border:2px solid var(--neon);box-shadow:0 0 20px rgba(57,255,20,0.2);}
+  .camera-wrap video{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#000;}
+  .camera-wrap canvas{display:none;}
+  /* scanning line */
+  .scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:var(--neon);box-shadow:0 0 8px var(--neon);animation:scanline 2s ease-in-out infinite;pointer-events:none;}
+  @keyframes scanline{0%{top:0}50%{top:calc(100% - 2px)}100%{top:0}}
+  /* corner brackets */
+  .cam-corner{position:absolute;width:22px;height:22px;border-color:var(--neon);border-style:solid;border-width:0;pointer-events:none;}
+  .cam-corner.tl{top:8px;left:8px;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0;}
+  .cam-corner.tr{top:8px;right:8px;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0;}
+  .cam-corner.bl{bottom:8px;left:8px;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px;}
+  .cam-corner.br{bottom:8px;right:8px;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0;}
+  /* overlay when not active */
+  .cam-placeholder{width:100%;max-width:300px;margin:1rem auto;aspect-ratio:1;background:var(--bg3);border:2px dashed var(--border2);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;cursor:pointer;transition:border-color 0.2s;}
+  .cam-placeholder:hover{border-color:var(--neon);}
+  .cam-placeholder-icon{font-size:2.5rem;}
+  .cam-placeholder-text{font-size:0.82rem;color:var(--text2);}
+  .cam-status{font-size:0.72rem;margin-top:0.25rem;min-height:1.2em;}
+  .cam-status.ok{color:var(--neon);}
+  .cam-status.err{color:var(--red);}
+  .cam-status.info{color:var(--text3);}
+  .cam-btn-row{display:flex;gap:0.5rem;justify-content:center;margin-top:0.75rem;}
+  .cam-btn{padding:0.45rem 1rem;border-radius:8px;font-size:0.8rem;font-weight:600;font-family:'Space Grotesk',sans-serif;cursor:pointer;border:1px solid var(--border2);transition:all 0.2s;}
+  .cam-btn.start{background:var(--neonsoft);color:var(--neon);}
+  .cam-btn.start:hover{background:var(--neonglow);}
+  .cam-btn.stop{background:transparent;color:var(--text2);}
+  .cam-btn.stop:hover{color:var(--red);border-color:var(--red);}
+
+  .scan-input{width:100%;padding:0.75rem 1rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:0.95rem;margin-bottom:1rem;outline:none;transition:border-color 0.2s;}
+  .scan-input:focus{border-color:var(--border2);}
+  .scan-input::placeholder{color:var(--text3);}
+  .btn{width:100%;padding:0.85rem;background:var(--neon);color:#0a0f0a;border:none;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;}
+  .btn:hover{background:#4dff2a;transform:translateY(-1px);box-shadow:0 4px 20px rgba(57,255,20,0.3);}
+  .btn:active{transform:translateY(0);}
+  .btn-outline{background:transparent;color:var(--neon);border:1px solid var(--border2);}
+  .btn-outline:hover{background:var(--neonsoft);box-shadow:none;transform:none;}
+  .btn-sm{width:auto;padding:0.5rem 1.25rem;font-size:0.8rem;}
+  .btn-gray{background:var(--card2);color:var(--text2);border:1px solid var(--border);}
+  .btn-gray:hover{background:var(--card);box-shadow:none;transform:none;}
+
+  /* SAVE MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:2rem;max-width:360px;width:90%;box-shadow:0 0 40px rgba(57,255,20,0.15);}
+  .modal h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;}
+  .modal p{font-size:0.8rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.6;}
+  .modal-btns{display:flex;gap:0.75rem;}
+  .modal-btns .btn{flex:1;}
+  .pct-options{display:flex;gap:0.5rem;margin-bottom:1rem;}
+  .pct-btn{flex:1;padding:0.5rem;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:'Space Grotesk',sans-serif;font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
+  .pct-btn:hover,.pct-btn.active{border-color:var(--border2);background:var(--neonsoft);color:var(--neon);}
+
+  /* MITRA */
+  .mitra-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+  .mitra-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;cursor:pointer;transition:all 0.2s;}
+  .mitra-card:hover{border-color:var(--border2);background:var(--card2);}
+  .mitra-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;}
+  .mitra-avatar{width:44px;height:44px;border-radius:10px;background:var(--neonsoft);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+  .mitra-name{font-weight:600;font-size:0.95rem;}
+  .mitra-type{font-size:0.75rem;color:var(--text2);}
+  .mitra-badge{display:inline-block;background:var(--neonsoft);color:var(--neon);font-size:0.7rem;font-weight:600;padding:2px 10px;border-radius:20px;border:1px solid var(--border);margin-bottom:0.5rem;}
+  .mitra-reward{font-size:0.8rem;color:var(--text2);display:flex;align-items:center;gap:6px;}
+  .reward-dot{width:6px;height:6px;border-radius:50%;background:var(--neon);}
+
+  /* DASHBOARD */
+  .dash-tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:0.75rem;}
+  .dash-tab{padding:0.4rem 1rem;border-radius:8px;font-size:0.82rem;font-weight:500;color:var(--text2);cursor:pointer;border:none;background:transparent;font-family:'Space Grotesk',sans-serif;transition:all 0.2s;}
+  .dash-tab:hover{color:var(--neon);}
+  .dash-tab.active{color:var(--neon);background:var(--neonsoft);border:1px solid var(--border);}
+  .dash-section{display:none;}
+  .dash-section.active{display:block;}
+
+  .dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+  .user-info{display:flex;align-items:center;gap:0.75rem;}
+  .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;color:#0a0f0a;}
+  .user-name{font-weight:600;}
+  .user-level{font-size:0.75rem;color:var(--neon);}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+  .metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;}
+  .metric-label{font-size:0.75rem;color:var(--text2);margin-bottom:0.5rem;}
+  .metric-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--neon);}
+  .metric-sub{font-size:0.7rem;color:var(--text3);margin-top:4px;}
+
+  /* GREEN SCORE */
+  .green-score-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;}
+  .score-title{font-size:0.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;}
+  .score-bar-wrap{background:var(--bg3);border-radius:20px;height:12px;overflow:hidden;margin-bottom:0.5rem;}
+  .score-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--neon2),var(--neon));transition:width 0.8s ease;box-shadow:0 0 10px rgba(57,255,20,0.3);}
+  .score-labels{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text3);}
+
+  /* CHART */
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;}
+  .chart-title{font-size:0.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1.5rem;}
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .bar{width:100%;border-radius:6px 6px 0 0;background:var(--neonsoft);border:1px solid var(--border2);min-height:4px;transition:all 0.3s;}
+  .bar.active{background:linear-gradient(180deg,var(--neon),var(--neon2));border-color:var(--neon);box-shadow:0 0 10px rgba(57,255,20,0.2);}
+  .bar-label{font-size:0.65rem;color:var(--text3);}
+
+  /* KEEP SAVING WALLET */
+  .wallet-card{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+  .wallet-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:var(--neonsoft);pointer-events:none;}
+  .wallet-label{font-size:0.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;}
+  .wallet-balance{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:var(--neon);margin-bottom:0.25rem;}
+  .wallet-sub{font-size:0.75rem;color:var(--text3);margin-bottom:1.5rem;}
+  .wallet-actions{display:flex;gap:0.75rem;}
+  .wallet-actions .btn{flex:1;}
+
+  .autosave-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;}
+  .autosave-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .autosave-title{font-size:0.9rem;font-weight:600;}
+  .toggle{width:44px;height:24px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;position:relative;transition:background 0.3s;}
+  .toggle.on{background:var(--neon);}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--text2);transition:transform 0.3s,background 0.3s;}
+  .toggle.on::after{transform:translateX(20px);background:#0a0f0a;}
+  .autosave-desc{font-size:0.78rem;color:var(--text2);margin-bottom:1rem;line-height:1.5;}
+  .pct-row{display:flex;gap:0.5rem;}
+  .pct-opt{flex:1;padding:0.5rem;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:'Space Grotesk',sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;text-align:center;transition:all 0.2s;}
+  .pct-opt:hover,.pct-opt.active{border-color:var(--border2);background:var(--neonsoft);color:var(--neon);}
+
+  .target-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;}
+  .target-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;}
+  .target-title{font-size:0.9rem;font-weight:600;}
+  .target-edit{font-size:0.75rem;color:var(--neon);cursor:pointer;}
+  .target-progress-wrap{background:var(--bg3);border-radius:20px;height:10px;overflow:hidden;margin-bottom:0.5rem;}
+  .target-progress{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--neon2),var(--neon));transition:width 0.8s ease;}
+  .target-labels{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text3);}
+
+  .wallet-history{display:flex;flex-direction:column;gap:0.75rem;}
+  .wh-item{display:flex;align-items:center;gap:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.875rem 1rem;}
+  .wh-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+  .wh-icon.in{background:rgba(57,255,20,0.1);border:1px solid var(--border);}
+  .wh-icon.out{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.2);}
+  .wh-info{flex:1;}
+  .wh-name{font-size:0.875rem;font-weight:500;}
+  .wh-date{font-size:0.72rem;color:var(--text2);}
+  .wh-amt.in{color:var(--neon);font-weight:600;font-size:0.875rem;}
+  .wh-amt.out{color:var(--red);font-weight:600;font-size:0.875rem;}
+
+  /* TX LIST */
+  .tx-list{display:flex;flex-direction:column;gap:0.75rem;}
+  .tx-item{display:flex;align-items:center;gap:1rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.875rem 1rem;}
+  .tx-icon{width:36px;height:36px;border-radius:8px;background:var(--neonsoft);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+  .tx-info{flex:1;}
+  .tx-name{font-size:0.875rem;font-weight:500;}
+  .tx-date{font-size:0.72rem;color:var(--text2);}
+  .tx-right{text-align:right;}
+  .tx-amount{font-size:0.875rem;font-weight:600;color:var(--text2);}
+  .tx-pts{font-size:0.72rem;color:var(--neon);font-weight:600;}
+
+  /* REDEEM */
+  .redeem-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+  .redeem-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;cursor:pointer;transition:all 0.2s;}
+  .redeem-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+  .redeem-card h3{font-size:0.9rem;font-weight:600;margin:0.75rem 0 0.25rem;}
+  .redeem-card p{font-size:0.75rem;color:var(--text2);}
+  .redeem-pts{color:var(--neon);font-weight:700;font-size:0.85rem;margin-top:0.5rem;}
+  .redeem-emoji{font-size:2rem;}
+
+  /* TOPUP MODAL */
+  .topup-input{width:100%;padding:0.75rem 1rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:600;outline:none;margin-bottom:0.75rem;transition:border-color 0.2s;}
+  .topup-input:focus{border-color:var(--border2);}
+  .quick-amounts{display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+  .qa-btn{padding:0.4rem 0.875rem;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:'Space Grotesk',sans-serif;font-size:0.78rem;cursor:pointer;transition:all 0.2s;}
+  .qa-btn:hover{border-color:var(--border2);color:var(--neon);background:var(--neonsoft);}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card2);border:1px solid var(--neon);border-radius:12px;padding:1rem 1.5rem;display:flex;align-items:center;gap:0.75rem;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);z-index:999;min-width:260px;box-shadow:0 0 30px rgba(57,255,20,0.2);}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast-icon{font-size:1.3rem;}
+  .toast-text{font-size:0.875rem;}
+
+  .sec-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+  .sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .divider{height:1px;background:var(--border);margin:1.5rem 0;}
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+  /* === MOBILE FIXES === */
+  @media (max-width: 600px) {
+    nav { padding: 0.75rem 1rem; }
+
+    /* Nav tabs: scrollable horizontal strip */
+    .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0.2rem; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .nav-tab { flex-shrink: 0; padding: 0.45rem 0.75rem; font-size: 0.78rem; }
+
+    .page { padding: 1rem; }
+
+    /* Hero */
+    .hero { padding: 1.5rem 0 1rem; }
+    .hero h1 { font-size: 2rem; }
+    .hero-stats { gap: 0.5rem; }
+    .stat-card { padding: 0.875rem 0.5rem; }
+    .stat-num { font-size: 1.4rem; }
+
+    /* Features: 1 kolom */
+    .features { grid-template-columns: 1fr; }
+
+    /* Mitra: 1 kolom */
+    .mitra-grid { grid-template-columns: 1fr; }
+
+    /* Dashboard metrics: tetap 3 kolom tapi lebih compact */
+    .metric { padding: 0.875rem 0.5rem; }
+    .metric-val { font-size: 1.3rem; }
+
+    /* Dash tabs: scrollable */
+    .dash-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+    .dash-tabs::-webkit-scrollbar { display: none; }
+    .dash-tab { flex-shrink: 0; }
+
+    /* Toast: tidak keluar layar */
+    .toast { left: 1rem; right: 1rem; transform: translateX(0) translateY(100px); min-width: unset; }
+    .toast.show { transform: translateX(0) translateY(0); }
+
+    /* Modal: full width */
+    .modal { width: 95%; }
+
+    /* Wallet balance */
+    .wallet-balance { font-size: 1.9rem; }
+
+    /* Redeem: 1 kolom */
+    .redeem-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">SP<span>ARK</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home',this)">Beranda</button>
+    <button class="nav-tab" onclick="showPage('scan',this)">Scan QR</button>
+    <button class="nav-tab" onclick="showPage('mitra',this)">Mitra <span class="nav-badge">8</span></button>
+    <button class="nav-tab" onclick="showPage('dashboard',this)">Dashboard</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="home">
+  <div class="hero">
+    <div class="hero-tag">🌿 Inovasi Finansial Hijau Gen Z</div>
+    <h1>Belanja Cerdas,<br><em>Bumi Lebih Baik</em></h1>
+    <p>Platform pembayaran yang mengubah setiap transaksi ramah lingkungan menjadi reward nyata, tabungan otomatis, dan dampak nyata bagi bumi.</p>
+    <button class="btn" style="max-width:240px;margin:0 auto;" onclick="showPage('scan',document.querySelectorAll('.nav-tab')[1])">Mulai Scan QR →</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card"><div class="stat-num">1.2K</div><div class="stat-label">Pengguna Aktif</div></div>
+    <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">Mitra Hijau</div></div>
+    <div class="stat-card"><div class="stat-num">247</div><div class="stat-label">Bibit Ditanam</div></div>
+  </div>
+  <div class="sec-title">Fitur Utama</div>
+  <div class="features">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <h3>Reward Real-Time</h3>
+      <p>Poin langsung masuk saat kamu scan QR di mitra SPARK. Kepuasan instan, dampak nyata.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">💰</div>
+      <h3>Dompet Hijau Digital</h3>
+      <p>Simpan uangmu di dompet SPARK dan alokasikan otomatis dari setiap transaksi hijau.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌿</div>
+      <h3>Green Score</h3>
+      <p>Setiap transaksi menghasilkan skor dampak lingkunganmu. Semakin hijau, semakin tinggi!</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎯</div>
+      <h3>Target Tabungan</h3>
+      <p>Set target tabungan sendiri dan pantau progressnya setiap saat secara real-time.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN -->
+<div class="page" id="scan">
+  <div class="scan-container">
+    <div class="sec-title">Scan & Dapat Poin</div>
+    <div class="scan-card">
+      <p style="font-size:0.8rem;color:var(--text2);margin-bottom:0.25rem;">Arahkan kamera ke QR Code mitra</p>
+
+      <!-- Camera live view (hidden until started) -->
+      <div class="camera-wrap" id="camera-wrap" style="display:none;">
+        <video id="cam-video" autoplay playsinline muted></video>
+        <canvas id="cam-canvas"></canvas>
+        <div class="scan-line"></div>
+        <div class="cam-corner tl"></div>
+        <div class="cam-corner tr"></div>
+        <div class="cam-corner bl"></div>
+        <div class="cam-corner br"></div>
+      </div>
+
+      <!-- Placeholder when camera off -->
+      <div class="cam-placeholder" id="cam-placeholder" onclick="startCamera()">
+        <div class="cam-placeholder-icon">📷</div>
+        <div class="cam-placeholder-text">Ketuk untuk buka kamera</div>
+      </div>
+
+      <div class="cam-status info" id="cam-status">Kamera belum aktif</div>
+
+      <div class="cam-btn-row">
+        <button class="cam-btn start" id="btn-start-cam" onclick="startCamera()">▶ Buka Kamera</button>
+        <button class="cam-btn stop" id="btn-stop-cam" onclick="stopCamera()" style="display:none;">✕ Tutup Kamera</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;color:var(--text2);font-size:0.8rem;margin:1rem 0;">— atau masukkan kode transaksi —</div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <select class="scan-input" id="sel-mitra">
+        <option value="">Pilih Mitra SPARK...</option>
+        <option value="Kafe Hijau Surabaya:5">☕ Kafe Hijau Surabaya</option>
+        <option value="EcoWear Indonesia:8">👕 EcoWear Indonesia</option>
+        <option value="Toko Daur Ulang:10">♻️ Toko Daur Ulang Nusantara</option>
+        <option value="Warung Organik Sehat:6">🥗 Warung Organik Sehat</option>
+        <option value="BambuCraft Studio:7">🎍 BambuCraft Studio</option>
+        <option value="GreenBox Market:5">🛒 GreenBox Market</option>
+        <option value="SolarCup Cafe:9">☀️ SolarCup Cafe</option>
+        <option value="EcoBook Store:6">📚 EcoBook Store</option>
+      </select>
+      <input class="scan-input" id="inp-amount" type="number" placeholder="Jumlah transaksi (Rp)" min="1000" step="1000">
+      <input class="scan-input" id="inp-code" type="text" placeholder="Kode transaksi (opsional)" maxlength="12">
+      <button class="btn" onclick="doScan()">⚡ Proses & Dapatkan Poin</button>
+    </div>
+    <div class="divider"></div>
+    <div class="sec-title" style="font-size:0.9rem;">Riwayat Scan Hari Ini</div>
+    <div class="tx-list" id="today-tx">
+      <div style="text-align:center;color:var(--text3);font-size:0.85rem;padding:1rem;">Belum ada transaksi hari ini</div>
+    </div>
+  </div>
+</div>
+
+<!-- MITRA -->
+<div class="page" id="mitra">
+  <div class="sec-title">Mitra Hijau Terverifikasi</div>
+  <p style="font-size:0.8rem;color:var(--text2);margin-bottom:1.5rem;">Semua mitra telah lolos verifikasi kelayakan hijau SPARK ✓</p>
+  <div class="mitra-grid">
+    <div class="mitra-card" onclick="selectMitra('Kafe Hijau Surabaya:5','☕')">
+      <div class="mitra-header"><div class="mitra-avatar">☕</div><div><div class="mitra-name">Kafe Hijau Surabaya</div><div class="mitra-type">Kafe & Minuman</div></div></div>
+      <div class="mitra-badge">✓ Bahan Lokal</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>5 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('EcoWear Indonesia:8','👕')">
+      <div class="mitra-header"><div class="mitra-avatar">👕</div><div><div class="mitra-name">EcoWear Indonesia</div><div class="mitra-type">Fashion Berkelanjutan</div></div></div>
+      <div class="mitra-badge">✓ Daur Ulang</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>8 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('Toko Daur Ulang:10','♻️')">
+      <div class="mitra-header"><div class="mitra-avatar">♻️</div><div><div class="mitra-name">Toko Daur Ulang</div><div class="mitra-type">Produk Daur Ulang</div></div></div>
+      <div class="mitra-badge">✓ Zero Waste</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>10 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('Warung Organik Sehat:6','🥗')">
+      <div class="mitra-header"><div class="mitra-avatar">🥗</div><div><div class="mitra-name">Warung Organik Sehat</div><div class="mitra-type">Makanan Organik</div></div></div>
+      <div class="mitra-badge">✓ Organik</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>6 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('BambuCraft Studio:7','🎍')">
+      <div class="mitra-header"><div class="mitra-avatar">🎍</div><div><div class="mitra-name">BambuCraft Studio</div><div class="mitra-type">Kerajinan Bambu</div></div></div>
+      <div class="mitra-badge">✓ Bahan Alam</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>7 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('GreenBox Market:5','🛒')">
+      <div class="mitra-header"><div class="mitra-avatar">🛒</div><div><div class="mitra-name">GreenBox Market</div><div class="mitra-type">Grocery Hijau</div></div></div>
+      <div class="mitra-badge">✓ Minim Plastik</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>5 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('SolarCup Cafe:9','☀️')">
+      <div class="mitra-header"><div class="mitra-avatar">☀️</div><div><div class="mitra-name">SolarCup Cafe</div><div class="mitra-type">Energi Surya</div></div></div>
+      <div class="mitra-badge">✓ Energi Terbarukan</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>9 poin per Rp10.000</div>
+    </div>
+    <div class="mitra-card" onclick="selectMitra('EcoBook Store:6','📚')">
+      <div class="mitra-header"><div class="mitra-avatar">📚</div><div><div class="mitra-name">EcoBook Store</div><div class="mitra-type">Buku & Edukasi</div></div></div>
+      <div class="mitra-badge">✓ Paper Recycle</div>
+      <div class="mitra-reward"><div class="reward-dot"></div>6 poin per Rp10.000</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="dashboard">
+  <div class="dash-header">
+    <div class="user-info">
+      <div class="avatar">RZ</div>
+      <div><div class="user-name">Rehan Z.</div><div class="user-level">🌿 Green Pioneer</div></div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:0.75rem;color:var(--text2);">Total Poin</div>
+      <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--neon);" id="total-pts">1.250</div>
+    </div>
+  </div>
+
+  <div class="dash-tabs">
+    <button class="dash-tab active" onclick="showDash('overview',this)">Overview</button>
+    <button class="dash-tab" onclick="showDash('wallet',this)">💰 Dompet Hijau</button>
+    <button class="dash-tab" onclick="showDash('history',this)">Riwayat</button>
+    <button class="dash-tab" onclick="showDash('redeem',this)">Tukar Poin</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="dash-section active" id="ds-overview">
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Dompet Hijau</div>
+        <div class="metric-val" id="m-wallet">45K</div>
+        <div class="metric-sub">saldo tersimpan</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Transaksi</div>
+        <div class="metric-val" id="m-tx">24</div>
+        <div class="metric-sub">bulan ini</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Bibit Pohon</div>
+        <div class="metric-val" id="m-trees">3</div>
+        <div class="metric-sub">atas namamu 🌱</div>
+      </div>
+    </div>
+    <div class="green-score-card">
+      <div class="score-title">Green Score</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+        <span style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--neon);" id="gscore">74</span>
+        <span style="font-size:0.75rem;color:var(--text2);">Target: 100</span>
+      </div>
+      <div class="score-bar-wrap"><div class="score-bar" id="score-bar" style="width:74%"></div></div>
+      <div class="score-labels"><span>Pemula</span><span>Aktif</span><span>Pioneer</span><span>Champion</span></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Tabungan Hijau — 6 Bulan Terakhir</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+  </div>
+
+  <!-- WALLET -->
+  <div class="dash-section" id="ds-wallet">
+    <div class="wallet-card">
+      <div class="wallet-label">Saldo Dompet Hijau</div>
+      <div class="wallet-balance" id="w-balance">Rp 45.000</div>
+      <div class="wallet-sub">Terintegrasi dengan mitra perbankan SPARK</div>
+      <div class="wallet-actions">
+        <button class="btn btn-sm" onclick="showTopup()">+ Top Up</button>
+        <button class="btn btn-sm btn-outline" onclick="showWithdraw()">↓ Tarik Dana</button>
+      </div>
+    </div>
+
+    <div class="autosave-card">
+      <div class="autosave-header">
+        <div class="autosave-title">💡 Alokasi Otomatis Keep Saving</div>
+        <div class="toggle on" id="autosave-toggle" onclick="toggleAutosave()"></div>
+      </div>
+      <div class="autosave-desc">Simpan otomatis sebagian dari setiap transaksi hijau ke dompetmu. Menabung tanpa terasa!</div>
+      <div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.5rem;">Pilih persentase alokasi:</div>
+      <div class="pct-row">
+        <div class="pct-opt" onclick="setPct(5,this)">5%</div>
+        <div class="pct-opt active" onclick="setPct(10,this)">10%</div>
+        <div class="pct-opt" onclick="setPct(15,this)">15%</div>
+        <div class="pct-opt" onclick="setPct(20,this)">20%</div>
+      </div>
+    </div>
+
+    <div class="target-card">
+      <div class="target-header">
+        <div class="target-title">🎯 Target Tabungan</div>
+        <div class="target-edit" onclick="editTarget()">Ubah Target</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+        <span style="font-size:0.8rem;color:var(--text2);">Progress</span>
+        <span style="font-size:0.875rem;font-weight:600;color:var(--neon);" id="target-pct">45%</span>
+      </div>
+      <div class="target-progress-wrap"><div class="target-progress" id="target-bar" style="width:45%"></div></div>
+      <div class="target-labels">
+        <span id="target-cur">Rp 45.000</span>
+        <span id="target-goal">Target: Rp 100.000</span>
+      </div>
+    </div>
+
+    <div class="sec-title" style="font-size:0.9rem;">Riwayat Dompet</div>
+    <div class="wallet-history" id="wallet-history">
+      <div class="wh-item"><div class="wh-icon in">⚡</div><div class="wh-info"><div class="wh-name">Alokasi otomatis — Kafe Hijau</div><div class="wh-date">Hari ini, 09.30</div></div><div class="wh-amt in">+Rp 2.500</div></div>
+      <div class="wh-item"><div class="wh-icon in">💳</div><div class="wh-info"><div class="wh-name">Top Up Manual</div><div class="wh-date">Kemarin, 14.00</div></div><div class="wh-amt in">+Rp 20.000</div></div>
+      <div class="wh-item"><div class="wh-icon in">⚡</div><div class="wh-info"><div class="wh-name">Alokasi otomatis — Warung Organik</div><div class="wh-date">Kemarin, 12.15</div></div><div class="wh-amt in">+Rp 4.500</div></div>
+      <div class="wh-item"><div class="wh-icon out">🎟️</div><div class="wh-info"><div class="wh-name">Tukar Voucher Diskon</div><div class="wh-date">3 hari lalu</div></div><div class="wh-amt out">-Rp 10.000</div></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="dash-section" id="ds-history">
+    <div class="tx-list" id="tx-history">
+      <div class="tx-item"><div class="tx-icon">☕</div><div class="tx-info"><div class="tx-name">Kafe Hijau Surabaya</div><div class="tx-date">Hari ini, 09.30</div></div><div class="tx-right"><div class="tx-amount">Rp 25.000</div><div class="tx-pts">+12 poin</div></div></div>
+      <div class="tx-item"><div class="tx-icon">🥗</div><div class="tx-info"><div class="tx-name">Warung Organik Sehat</div><div class="tx-date">Kemarin, 12.15</div></div><div class="tx-right"><div class="tx-amount">Rp 45.000</div><div class="tx-pts">+27 poin</div></div></div>
+      <div class="tx-item"><div class="tx-icon">♻️</div><div class="tx-info"><div class="tx-name">Toko Daur Ulang</div><div class="tx-date">3 hari lalu</div></div><div class="tx-right"><div class="tx-amount">Rp 60.000</div><div class="tx-pts">+60 poin</div></div></div>
+      <div class="tx-item"><div class="tx-icon">👕</div><div class="tx-info"><div class="tx-name">EcoWear Indonesia</div><div class="tx-date">5 hari lalu</div></div><div class="tx-right"><div class="tx-amount">Rp 120.000</div><div class="tx-pts">+96 poin</div></div></div>
+      <div class="tx-item"><div class="tx-icon">☀️</div><div class="tx-info"><div class="tx-name">SolarCup Cafe</div><div class="tx-date">1 minggu lalu</div></div><div class="tx-right"><div class="tx-amount">Rp 30.000</div><div class="tx-pts">+27 poin</div></div></div>
+    </div>
+  </div>
+
+  <!-- REDEEM -->
+  <div class="dash-section" id="ds-redeem">
+    <p style="font-size:0.8rem;color:var(--text2);margin-bottom:1.25rem;">Poin kamu: <span style="color:var(--neon);font-weight:700;" id="redeem-pts-disp">1.250</span></p>
+    <div class="redeem-grid">
+      <div class="redeem-card" onclick="doRedeem('voucher')">
+        <div class="redeem-emoji">🎟️</div>
+        <h3>Voucher Diskon</h3>
+        <p>Diskon 10-20% di mitra SPARK pilihanmu</p>
+        <div class="redeem-pts">100 poin</div>
+      </div>
+      <div class="redeem-card" onclick="doRedeem('bibit')">
+        <div class="redeem-emoji">🌱</div>
+        <h3>Tanam Bibit Pohon</h3>
+        <p>Pohon ditanam atas namamu di seluruh Indonesia</p>
+        <div class="redeem-pts">300 poin</div>
+      </div>
+      <div class="redeem-card" onclick="doRedeem('saldo')">
+        <div class="redeem-emoji">💰</div>
+        <h3>Saldo Dompet Hijau</h3>
+        <p>Konversi poin menjadi saldo di dompet hijau SPARK</p>
+        <div class="redeem-pts">50 poin = Rp 5.000</div>
+      </div>
+      <div class="redeem-card" onclick="doRedeem('cashback')">
+        <div class="redeem-emoji">💸</div>
+        <h3>Cashback Transaksi</h3>
+        <p>Kembalikan ke saldo dompet untuk transaksi berikutnya</p>
+        <div class="redeem-pts">200 poin = Rp 25.000</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPUP MODAL -->
+<div class="modal-overlay" id="topup-modal">
+  <div class="modal">
+    <h3>💳 Top Up Dompet Hijau</h3>
+    <p>Dana tersimpan aman melalui mitra perbankan terintegrasi SPARK.</p>
+    <input class="topup-input" id="topup-amt" type="number" placeholder="Rp 0" min="10000" step="5000">
+    <div class="quick-amounts">
+      <div class="qa-btn" onclick="setTopup(20000)">Rp 20K</div>
+      <div class="qa-btn" onclick="setTopup(50000)">Rp 50K</div>
+      <div class="qa-btn" onclick="setTopup(100000)">Rp 100K</div>
+      <div class="qa-btn" onclick="setTopup(200000)">Rp 200K</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-gray btn-sm" onclick="closeModal('topup-modal')">Batal</button>
+      <button class="btn btn-sm" onclick="confirmTopup()">Top Up Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- WITHDRAW MODAL -->
+<div class="modal-overlay" id="withdraw-modal">
+  <div class="modal">
+    <h3>↓ Tarik Dana</h3>
+    <p>Dana akan ditransfer ke rekening bank yang terdaftar dalam 1x24 jam.</p>
+    <input class="topup-input" id="withdraw-amt" type="number" placeholder="Rp 0" min="10000" step="5000">
+    <div class="quick-amounts">
+      <div class="qa-btn" onclick="setWithdraw(10000)">Rp 10K</div>
+      <div class="qa-btn" onclick="setWithdraw(25000)">Rp 25K</div>
+      <div class="qa-btn" onclick="setWithdraw(45000)">Semua</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-gray btn-sm" onclick="closeModal('withdraw-modal')">Batal</button>
+      <button class="btn btn-sm" onclick="confirmWithdraw()">Tarik Dana</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE PROMPT MODAL -->
+<div class="modal-overlay" id="save-modal">
+  <div class="modal">
+    <h3>💰 Simpan ke Dompet Hijau?</h3>
+    <p id="save-modal-desc">Alokasikan sebagian dari transaksi ini ke Dompet Hijau SPARK-mu.</p>
+    <div class="pct-options">
+      <button class="pct-btn active" onclick="setSavePct(5,this)">5%</button>
+      <button class="pct-btn" onclick="setSavePct(10,this)">10%</button>
+      <button class="pct-btn" onclick="setSavePct(15,this)">15%</button>
+      <button class="pct-btn" onclick="setSavePct(20,this)">20%</button>
+    </div>
+    <p style="font-size:0.85rem;margin-bottom:1.25rem;">Simpan: <span style="color:var(--neon);font-weight:700;" id="save-amount-preview">Rp 0</span></p>
+    <div class="modal-btns">
+      <button class="btn btn-gray btn-sm" onclick="closeModal('save-modal');finalizeScan()">Lewati</button>
+      <button class="btn btn-sm" onclick="confirmSave()">Simpan & Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon">⚡</div>
+  <div class="toast-text" id="toast-text"></div>
+</div>
+
+<script>
+var state = {
+  points: 1250,
+  trees: 3,
+  txCount: 24,
+  wallet: 45000,
+  gscore: 74,
+  autosave: true,
+  savePct: 10,
+  targetGoal: 100000,
+  pendingTx: null
+};
+
+var months = ['Nov','Des','Jan','Feb','Mar','Apr'];
+var barData = [22000,35000,28000,51000,40000,45000];
+var icons = {'Kafe Hijau Surabaya':'☕','EcoWear Indonesia':'👕','Toko Daur Ulang':'♻️','Warung Organik Sehat':'🥗','BambuCraft Studio':'🎍','GreenBox Market':'🛒','SolarCup Cafe':'☀️','EcoBook Store':'📚'};
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='dashboard') renderDash();
+}
+
+function showDash(id, btn) {
+  document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('ds-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function genQR() {
+  var grid = document.getElementById('qr-grid');
+  grid.innerHTML = '';
+  for(var i=0;i<25;i++){
+    var cell = document.createElement('div');
+    cell.className = 'qr-cell' + (Math.random()>0.45?'':' empty');
+    grid.appendChild(cell);
+  }
+}
+
+function doScan() {
+  var raw = document.getElementById('sel-mitra').value;
+  var amount = parseInt(document.getElementById('inp-amount').value)||0;
+  if(!raw){showToast('⚠️','Pilih mitra terlebih dahulu!');return;}
+  if(amount<1000){showToast('⚠️','Masukkan jumlah transaksi!');return;}
+
+  var parts = raw.split(':');
+  var mitra = parts[0]; var rate = parseInt(parts[1])||5;
+  var pts = Math.floor(amount/10000*rate);
+  if(pts<1) pts=1;
+
+  state.pendingTx = {mitra, amount, pts, icon: icons[mitra]||'🌿'};
+  state.points += pts;
+  state.txCount++;
+  state.gscore = Math.min(100, state.gscore + Math.floor(pts/5));
+
+  if(state.autosave) {
+    var saveAmt = Math.floor(amount * state.savePct / 100);
+    document.getElementById('save-modal-desc').textContent =
+      'Kamu baru bertransaksi Rp '+amount.toLocaleString('id-ID')+' di '+mitra+'. Alokasikan ke Dompet Hijau?';
+    document.getElementById('save-amount-preview').textContent = 'Rp '+saveAmt.toLocaleString('id-ID');
+    document.getElementById('save-modal').classList.add('show');
+  } else {
+    finalizeScan();
+  }
+}
+
+function setSavePct(pct, btn) {
+  document.querySelectorAll('.pct-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  var amount = state.pendingTx ? state.pendingTx.amount : 0;
+  var saveAmt = Math.floor(amount*pct/100);
+  document.getElementById('save-amount-preview').textContent = 'Rp '+saveAmt.toLocaleString('id-ID');
+  state._tempSavePct = pct;
+}
+
+function confirmSave() {
+  var pct = state._tempSavePct || state.savePct;
+  var saveAmt = Math.floor(state.pendingTx.amount * pct / 100);
+  state.wallet += saveAmt;
+  barData[5] += saveAmt;
+
+  var wh = document.getElementById('wallet-history');
+  var now = new Date();
+  var timeStr = now.getHours()+'.'+String(now.getMinutes()).padStart(2,'0');
+  var item = document.createElement('div');
+  item.className = 'wh-item';
+  item.innerHTML = '<div class="wh-icon in">⚡</div><div class="wh-info"><div class="wh-name">Alokasi otomatis — '+state.pendingTx.mitra+'</div><div class="wh-date">Hari ini, '+timeStr+'</div></div><div class="wh-amt in">+Rp '+saveAmt.toLocaleString('id-ID')+'</div>';
+  wh.insertBefore(item, wh.firstChild);
+
+  closeModal('save-modal');
+  finalizeScan();
+  showToast('💰','Rp '+saveAmt.toLocaleString('id-ID')+' tersimpan di Dompet Hijau!');
+}
+
+function finalizeScan() {
+  if(!state.pendingTx) return;
+  var tx = state.pendingTx;
+  var txDiv = document.getElementById('today-tx');
+  if(txDiv.querySelector('div[style*="color:var(--text3)"]')) txDiv.innerHTML='';
+
+  var now = new Date();
+  var timeStr = now.getHours()+'.'+String(now.getMinutes()).padStart(2,'0');
+  var item = document.createElement('div');
+  item.className='tx-item';
+  item.innerHTML='<div class="tx-icon">'+tx.icon+'</div><div class="tx-info"><div class="tx-name">'+tx.mitra+'</div><div class="tx-date">Hari ini, '+timeStr+'</div></div><div class="tx-right"><div class="tx-amount">Rp '+tx.amount.toLocaleString('id-ID')+'</div><div class="tx-pts">+'+tx.pts+' poin</div></div>';
+  txDiv.insertBefore(item, txDiv.firstChild);
+
+  document.getElementById('inp-amount').value='';
+  document.getElementById('inp-code').value='';
+  document.getElementById('sel-mitra').value='';
+  genQR();
+  updateDash();
+  showToast('⚡','Transaksi berhasil! +'+tx.pts+' poin masuk');
+  state.pendingTx = null;
+}
+
+function updateDash() {
+  document.getElementById('total-pts').textContent = state.points.toLocaleString('id-ID');
+  document.getElementById('redeem-pts-disp').textContent = state.points.toLocaleString('id-ID');
+  document.getElementById('m-wallet').textContent = Math.round(state.wallet/1000)+'K';
+  document.getElementById('m-tx').textContent = state.txCount;
+  document.getElementById('m-trees').textContent = state.trees;
+  document.getElementById('gscore').textContent = state.gscore;
+  document.getElementById('score-bar').style.width = state.gscore+'%';
+  document.getElementById('w-balance').textContent = 'Rp '+state.wallet.toLocaleString('id-ID');
+  var pct = Math.min(100, Math.round(state.wallet/state.targetGoal*100));
+  document.getElementById('target-pct').textContent = pct+'%';
+  document.getElementById('target-bar').style.width = pct+'%';
+  document.getElementById('target-cur').textContent = 'Rp '+state.wallet.toLocaleString('id-ID');
+  document.getElementById('target-goal').textContent = 'Target: Rp '+state.targetGoal.toLocaleString('id-ID');
+}
+
+function renderDash() {
+  updateDash();
+  var chart = document.getElementById('bar-chart');
+  var max = Math.max.apply(null,barData);
+  chart.innerHTML='';
+  barData.forEach(function(v,i){
+    var pct = Math.round(v/max*100);
+    var col = document.createElement('div');
+    col.className='bar-col';
+    col.innerHTML='<div class="bar'+(i===5?' active':'')+'" style="height:'+pct+'%"></div><div class="bar-label">'+months[i]+'</div>';
+    chart.appendChild(col);
+  });
+}
+
+function toggleAutosave() {
+  state.autosave = !state.autosave;
+  var t = document.getElementById('autosave-toggle');
+  t.classList.toggle('on', state.autosave);
+  showToast(state.autosave?'✅':'⏸️', state.autosave?'Alokasi otomatis aktif':'Alokasi otomatis dimatikan');
+}
+
+function setPct(pct, el) {
+  state.savePct = pct;
+  document.querySelectorAll('.pct-opt').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  showToast('💡','Alokasi diset ke '+pct+'% per transaksi');
+}
+
+function editTarget() {
+  var val = prompt('Masukkan target tabungan (Rp):');
+  if(val && !isNaN(val) && parseInt(val)>0) {
+    state.targetGoal = parseInt(val);
+    updateDash();
+    showToast('🎯','Target tabungan diperbarui!');
+  }
+}
+
+function selectMitra(val, icon) {
+  showPage('scan', document.querySelectorAll('.nav-tab')[1]);
+  document.getElementById('sel-mitra').value = val;
+  var name = val.split(':')[0];
+  showToast('✓','Mitra '+name+' dipilih!');
+}
+
+function showTopup() { document.getElementById('topup-modal').classList.add('show'); }
+function showWithdraw() { document.getElementById('withdraw-modal').classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function setTopup(v) { document.getElementById('topup-amt').value=v; }
+function setWithdraw(v) { document.getElementById('withdraw-amt').value = v===45000?state.wallet:v; }
+
+function confirmTopup() {
+  var amt = parseInt(document.getElementById('topup-amt').value)||0;
+  if(amt<10000){showToast('⚠️','Minimum top up Rp 10.000');return;}
+  state.wallet += amt;
+  barData[5] += amt;
+  var wh = document.getElementById('wallet-history');
+  var item = document.createElement('div');
+  item.className='wh-item';
+  item.innerHTML='<div class="wh-icon in">💳</div><div class="wh-info"><div class="wh-name">Top Up Manual</div><div class="wh-date">Baru saja</div></div><div class="wh-amt in">+Rp '+amt.toLocaleString('id-ID')+'</div>';
+  wh.insertBefore(item, wh.firstChild);
+  closeModal('topup-modal');
+  updateDash();
+  showToast('💳','Top up Rp '+amt.toLocaleString('id-ID')+' berhasil!');
+}
+
+function confirmWithdraw() {
+  var amt = parseInt(document.getElementById('withdraw-amt').value)||0;
+  if(amt<10000){showToast('⚠️','Minimum tarik dana Rp 10.000');return;}
+  if(amt>state.wallet){showToast('⚠️','Saldo tidak mencukupi!');return;}
+  state.wallet -= amt;
+  var wh = document.getElementById('wallet-history');
+  var item = document.createElement('div');
+  item.className='wh-item';
+  item.innerHTML='<div class="wh-icon out">🏦</div><div class="wh-info"><div class="wh-name">Tarik Dana ke Rekening</div><div class="wh-date">Baru saja</div></div><div class="wh-amt out">-Rp '+amt.toLocaleString('id-ID')+'</div>';
+  wh.insertBefore(item, wh.firstChild);
+  closeModal('withdraw-modal');
+  updateDash();
+  showToast('🏦','Tarik dana berhasil! Dana dalam proses.');
+}
+
+function doRedeem(type) {
+  if(type==='voucher') {
+    if(state.points<100){showToast('⚠️','Poin tidak cukup! Butuh 100 poin');return;}
+    state.points-=100;
+    showToast('🎟️','Voucher diskon berhasil ditukar!');
+  } else if(type==='bibit') {
+    if(state.points<300){showToast('⚠️','Poin tidak cukup! Butuh 300 poin');return;}
+    state.points-=300; state.trees++;
+    showToast('🌱','Bibit pohon akan ditanam atas namamu!');
+  } else if(type==='saldo') {
+    if(state.points<50){showToast('⚠️','Poin tidak cukup! Butuh 50 poin');return;}
+    var batches = Math.floor(state.points/50);
+    var cost = batches*50; var earned = batches*5000;
+    state.points-=cost; state.wallet+=earned;
+    showToast('💰','Rp '+earned.toLocaleString('id-ID')+' masuk ke Dompet Hijau!');
+  } else if(type==='cashback') {
+    if(state.points<200){showToast('⚠️','Poin tidak cukup! Butuh 200 poin');return;}
+    state.points-=200; state.wallet+=25000;
+    showToast('💸','Cashback Rp 25.000 masuk ke Dompet Hijau!');
+  }
+  updateDash();
+}
+
+function showToast(icon, msg) {
+  var t=document.getElementById('toast');
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-text').textContent=msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+genQR();
+renderDash();
+</script>
+
+<!-- jsQR for real QR code reading -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+var camStream = null;
+var camRafId = null;
+var camScanned = false;
+
+function startCamera() {
+  var status = document.getElementById('cam-status');
+  var wrap   = document.getElementById('camera-wrap');
+  var ph     = document.getElementById('cam-placeholder');
+  var btnStart = document.getElementById('btn-start-cam');
+  var btnStop  = document.getElementById('btn-stop-cam');
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    status.className = 'cam-status err';
+    status.textContent = 'Browser tidak mendukung akses kamera.';
+    return;
+  }
+
+  status.className = 'cam-status info';
+  status.textContent = 'Meminta izin kamera...';
+
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 1280 } }
+  }).then(function(stream) {
+    camStream = stream;
+    camScanned = false;
+    var video = document.getElementById('cam-video');
+    video.srcObject = stream;
+    video.play();
+
+    ph.style.display = 'none';
+    wrap.style.display = 'block';
+    btnStart.style.display = 'none';
+    btnStop.style.display = 'inline-block';
+    status.className = 'cam-status ok';
+    status.textContent = '📷 Kamera aktif — arahkan ke QR Code mitra';
+
+    video.addEventListener('loadedmetadata', function() {
+      var canvas = document.getElementById('cam-canvas');
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      tickScan();
+    });
+  }).catch(function(err) {
+    status.className = 'cam-status err';
+    if (err.name === 'NotAllowedError') {
+      status.textContent = '⛔ Izin kamera ditolak. Aktifkan di pengaturan browser.';
+    } else if (err.name === 'NotFoundError') {
+      status.textContent = '⛔ Kamera tidak ditemukan di perangkat ini.';
+    } else {
+      status.textContent = '⛔ Gagal membuka kamera: ' + err.message;
+    }
+  });
+}
+
+function stopCamera() {
+  if (camStream) {
+    camStream.getTracks().forEach(function(t){ t.stop(); });
+    camStream = null;
+  }
+  if (camRafId) { cancelAnimationFrame(camRafId); camRafId = null; }
+  var video = document.getElementById('cam-video');
+  video.srcObject = null;
+  document.getElementById('camera-wrap').style.display = 'none';
+  document.getElementById('cam-placeholder').style.display = 'flex';
+  document.getElementById('btn-start-cam').style.display = 'inline-block';
+  document.getElementById('btn-stop-cam').style.display = 'none';
+  var status = document.getElementById('cam-status');
+  status.className = 'cam-status info';
+  status.textContent = 'Kamera dimatikan.';
+}
+
+function tickScan() {
+  if (!camStream) return;
+  var video  = document.getElementById('cam-video');
+  var canvas = document.getElementById('cam-canvas');
+  var ctx    = canvas.getContext('2d');
+
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+
+    if (code && !camScanned) {
+      camScanned = true;
+      handleQRResult(code.data);
+      return;
+    }
+  }
+  camRafId = requestAnimationFrame(tickScan);
+}
+
+function handleQRResult(data) {
+  var status = document.getElementById('cam-status');
+  status.className = 'cam-status ok';
+  status.textContent = '✅ QR terbaca!';
+
+  // Try to auto-fill fields if QR contains mitra info (format: "SPARK:MitraName:amount")
+  // or just fill the code field with whatever was scanned
+  var parts = data.split(':');
+  if (parts[0] === 'SPARK' && parts[1]) {
+    // structured SPARK QR
+    var mitraVal = parts[1];
+    var amt      = parts[2] || '';
+    var sel = document.getElementById('sel-mitra');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value.toLowerCase().indexOf(mitraVal.toLowerCase()) !== -1) {
+        sel.value = sel.options[i].value; break;
+      }
+    }
+    if (amt) document.getElementById('inp-amount').value = amt;
+    document.getElementById('inp-code').value = data.substring(0, 12);
+    showToast('📷', 'QR mitra terbaca: ' + (parts[1] || data));
+  } else {
+    // fill code field with raw QR data
+    document.getElementById('inp-code').value = data.substring(0, 12);
+    showToast('📷', 'QR terbaca — lengkapi data transaksi');
+  }
+
+  stopCamera();
+  // scroll down to form
+  document.getElementById('inp-amount').focus();
+}
+
+// Auto stop camera when leaving scan page
+var origShowPage = showPage;
+showPage = function(id, btn, bnavId) {
+  if (id !== 'scan' && camStream) stopCamera();
+  origShowPage(id, btn, bnavId);
+};
+</script>
+</body>
+</html>
